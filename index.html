@@ -58,15 +58,6 @@ p { margin: 0 0 10px; }
 .chip.c-alta { border-color: var(--ok); color: var(--ok); }
 .chip.c-media { border-color: var(--aviso); color: var(--aviso); }
 .chip.c-baixa { border-color: var(--erro); color: var(--erro); }
-.radar { width: 100%; height: auto; display: block; }
-.radar text { fill: var(--txt); font-size: 11px; cursor: pointer; }
-.radar .cod { font-weight: 700; font-size: 16px; }
-.radar .sub { fill: var(--mut); font-size: 9.5px; }
-.radar .anel { fill: none; stroke: var(--linha); stroke-width: 1; }
-.radar .raio { stroke: var(--linha); stroke-width: 1; }
-.radar .area { fill: var(--acento); fill-opacity: .25; stroke: var(--acento); stroke-width: 2; }
-.radar .pt { fill: var(--acento); stroke: var(--bg); stroke-width: 2; cursor: pointer; }
-.radar .escala { fill: var(--mut); font-size: 11px; cursor: default; }
 .mapa-linha { padding: 10px 0; border-top: 1px solid var(--linha); cursor: pointer; }
 .mapa-linha:first-child { border-top: none; }
 .mapa-linha:hover h3 { color: var(--acento); }
@@ -77,9 +68,6 @@ p { margin: 0 0 10px; }
 .polos span { max-width: 48%; }
 .polos span:last-child { text-align: right; }
 .nota-grande { font-size: 2.6rem; font-weight: 800; line-height: 1; white-space: nowrap; flex-shrink: 0; }
-.legenda { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.leg { border: 1px solid var(--linha); background: var(--card2); color: var(--txt); border-radius: 99px; padding: 6px 10px; font: inherit; font-size: .8rem; cursor: pointer; }
-.leg b { color: var(--acento); }
 .cab-eixo { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
 .item { border-top: 1px solid var(--linha); padding: 12px 0; }
 .item:first-of-type { border-top: none; }
@@ -98,6 +86,24 @@ ul.sem { padding-left: 18px; margin: 6px 0 10px; }
 .dica { color: var(--aviso); font-weight: 600; margin-bottom: 8px; }
 .rodape-perg { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 
+.calor { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.cel { width: 56px; height: 52px; border: none; border-radius: 10px; color: #101420; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font: inherit; line-height: 1.15; padding: 0; }
+.cel b { font-size: .85rem; }
+.cel span { font-size: .78rem; font-weight: 600; }
+.cel.vazio { background: repeating-linear-gradient(45deg, var(--card2), var(--card2) 6px, var(--linha) 6px, var(--linha) 12px); color: var(--mut); }
+.bl-tit { margin: 14px 0 8px; color: var(--mut); font-size: .85rem; font-weight: 700; }
+.leg-cal { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--mut); margin-top: 6px; }
+.leg-cal i { flex: 1; height: 8px; border-radius: 99px; background: linear-gradient(90deg, #2fb7a6, #8a93a6, #e6a23c); }
+.div-trilho { position: relative; height: 14px; border-radius: 99px; background: var(--card2); margin: 12px 0 8px; }
+.div-centro { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--mut); border-radius: 2px; }
+.div-tick { position: absolute; top: 4px; bottom: 4px; width: 1px; background: var(--linha); }
+.div-fill { position: absolute; top: 2px; bottom: 2px; }
+.div-fill.p1 { background: var(--p1); border-radius: 99px 0 0 99px; }
+.div-fill.p5 { background: var(--p5); border-radius: 0 99px 99px 0; }
+.div-dot { position: absolute; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: var(--txt); border: 3px solid var(--bg); box-shadow: 0 0 0 2px var(--acento); }
+.div-trilho.vazia { opacity: .4; }
+details.bl-det > summary { font-weight: 700; font-size: 1.05rem; padding: 2px 0 8px; cursor: pointer; }
+
 </style>
 </head>
 <body>
@@ -105,7 +111,7 @@ ul.sem { padding-left: 18px; margin: 6px 0 10px; }
 <script>
 // Gerado de bloco_A_itens_v2.xlsx, da aba Eixos e de ajuda_bloco_A.py. Para novos blocos, acrescente objetos em "blocos".
 window.QUESTIONARIO = {
- "versao": "0.2 (teste, só bloco A)",
+ "versao": "0.3 (teste, só bloco A)",
  "escala": [
   {
    "v": 1,
@@ -853,37 +859,49 @@ window.QUESTIONARIO = {
   }
 
   /* ---------- Resultado ---------- */
-  function radarSVG(eixos) {
-    var n = eixos.length, cx = 200, cy = 190, R = 138;
-    if (n < 3) return '';
-    var ang = function (i) { return -Math.PI / 2 + i * 2 * Math.PI / n; };
-    var s = '<svg class="radar" viewBox="0 0 400 380" role="img" aria-label="Gráfico de radar com a posição em cada eixo">';
-    for (var r = 1; r <= 5; r++) {
-      var pts = [];
-      for (var i = 0; i < n; i++) pts.push((cx + (r - 1) / 4 * R * Math.cos(ang(i))).toFixed(1) + ',' + (cy + (r - 1) / 4 * R * Math.sin(ang(i))).toFixed(1));
-      if (r === 1) continue;
-      s += '<polygon class="anel" points="' + pts.join(' ') + '"/>';
-    }
-    for (var k = 0; k < n; k++) s += '<line class="raio" x1="' + cx + '" y1="' + cy + '" x2="' + (cx + R * Math.cos(ang(k))).toFixed(1) + '" y2="' + (cy + R * Math.sin(ang(k))).toFixed(1) + '"/>';
-    s += '<text class="escala" x="' + (cx + 4) + '" y="' + (cy - R / 2 - 1) + '">3</text><text class="escala" x="' + (cx + 4) + '" y="' + (cy - R - 2) + '">5</text><text class="escala" x="' + (cx + 4) + '" y="' + (cy - 3) + '">1</text>';
-    var poly = [], pontos = '';
-    eixos.forEach(function (e, i) {
-      if (e.media === null) return;
-      var rr = (e.media - 1) / 4 * R;
-      var x = cx + rr * Math.cos(ang(i)), y = cy + rr * Math.sin(ang(i));
-      poly.push(x.toFixed(1) + ',' + y.toFixed(1));
-      pontos += '<circle class="pt" data-acao="aba" data-v="' + e.codigo + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6"><title>' + h(e.codigo + ' ' + e.nome + ': ' + fmt(e.media)) + '</title></circle>';
+  function mixCor(x, y, k) { return [0, 1, 2].map(function (i) { return Math.round(x[i] + (y[i] - x[i]) * k); }); }
+  function corCalor(m) {
+    if (m === null) return null;
+    var t = Math.max(0, Math.min(1, (m - 1) / 4));
+    var a = [47, 183, 166], n = [138, 147, 166], z = [230, 162, 60];
+    var c = t < 0.5 ? mixCor(a, n, t * 2) : mixCor(n, z, (t - 0.5) * 2);
+    return 'rgb(' + c.join(',') + ')';
+  }
+
+  function faixaCalor(res) {
+    var out = '<div class="card"><h2>Seu padrão em todos os eixos</h2>' +
+      '<p class="mut peq">Cada quadrado é um eixo. Verde-azulado = tende ao Polo 1; cinza = posição do meio; âmbar = tende ao Polo 5. As cores indicam o lado do eixo, não o que é melhor ou pior, nem partido. Toque num quadrado para ver o detalhe.</p>';
+    res.blocos.forEach(function (b) {
+      out += '<h3 class="bl-tit">Bloco ' + h(b.codigo) + ' · ' + h(b.nome) + '</h3><div class="calor">';
+      b.eixos.forEach(function (e) {
+        var cor = corCalor(e.media);
+        out += '<button class="cel' + (cor ? '' : ' vazio') + '" data-acao="aba" data-v="' + e.codigo + '"' + (cor ? ' style="background:' + cor + '"' : '') +
+          ' title="' + h(e.nome) + '" aria-label="' + h(e.codigo + ' ' + e.nome + ': ' + (e.media === null ? 'sem dados' : fmt(e.media))) + '"><b>' + h(e.codigo) + '</b><span>' + fmt(e.media) + '</span></button>';
+      });
+      out += '</div>';
     });
-    if (poly.length >= 3) s += '<polygon class="area" points="' + poly.join(' ') + '"/>';
-    else if (poly.length === 2) s += '<polyline class="area" points="' + poly.join(' ') + '"/>';
-    s += pontos;
-    eixos.forEach(function (e, i) {
-      var c = Math.cos(ang(i)), sn = Math.sin(ang(i));
-      var lx = cx + (R + 16) * c, ly = cy + (R + 16) * sn + 5;
-      var anc = c > 0.3 ? 'start' : (c < -0.3 ? 'end' : 'middle');
-      s += '<g data-acao="aba" data-v="' + e.codigo + '"><text class="cod" x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anc + '">' + h(e.codigo) + '</text></g>';
+    return out + '<div class="leg-cal"><span>Polo 1</span><i></i><span>Polo 5</span></div></div>';
+  }
+
+  function linhaDiv(e) {
+    var p = pct(e.media), vazio = e.media === null;
+    var fill = vazio ? '' : '<span class="div-fill ' + (p < 50 ? 'p1' : 'p5') + '" style="left:' + Math.min(50, p) + '%;width:' + Math.abs(p - 50) + '%"></span>';
+    var dot = vazio ? '' : '<span class="div-dot" style="left:' + p + '%"></span>';
+    return '<div class="mapa-linha" data-acao="aba" data-v="' + e.codigo + '">' +
+      '<div class="topo" style="margin:0"><h3>' + h(e.codigo) + ' · ' + h(e.nome) + '</h3><span class="chip c-' + e.posicao.chave + '">' + fmt(e.media) + '</span></div>' +
+      '<div class="div-trilho' + (vazio ? ' vazia' : '') + '"><span class="div-tick" style="left:25%"></span><span class="div-tick" style="left:75%"></span><span class="div-centro"></span>' + fill + dot + '</div>' +
+      '<div class="polos"><span>' + h(e.polo1) + '</span><span>' + h(e.polo5) + '</span></div>' +
+      (e.consistencia.chave === 'baixa' ? '<p class="peq" style="color:var(--aviso);margin:4px 0 0">Respostas divergentes neste eixo</p>' : '') + '</div>';
+  }
+
+  function graficoDivergente(res) {
+    var out = '<div class="card"><h2>Posição em cada eixo</h2><p class="mut peq" style="margin:0">A linha do meio é a posição neutra (nota 3). A barra parte do centro e vai até a sua nota: para a esquerda é o lado do Polo 1 (verde-azulado), para a direita o lado do Polo 5 (âmbar). Toque num eixo para ver o detalhe.</p></div>';
+    res.blocos.forEach(function (b, i) {
+      out += '<details class="card bl-det"' + (i === 0 || res.blocos.length <= 2 ? ' open' : '') + '><summary>Bloco ' + h(b.codigo) + ' · ' + h(b.nome) + ' <span class="mut peq">(' + b.eixos.length + ' eixos)</span></summary>';
+      b.eixos.forEach(function (e) { out += linhaDiv(e); });
+      out += '</details>';
     });
-    return s + '</svg>';
+    return out;
   }
 
   function barraPos(m, vazia) {
@@ -906,19 +924,8 @@ window.QUESTIONARIO = {
       '<div class="kpi"><b>' + (dur === null ? '–' : dur + ' min') + '</b><span>tempo de resposta</span></div></div>';
     res.qualidade.alertas.forEach(function (a) { out += '<div class="card erro"><p class="peq" style="margin:0">' + h(a) + '</p></div>'; });
 
-    res.blocos.forEach(function (b) {
-      out += '<div class="card"><h2>Bloco ' + h(b.codigo) + ' · ' + h(b.nome) + '</h2>';
-      out += '<p class="mut peq">Centro do gráfico = Polo 1 (nota 1); borda = Polo 5 (nota 5). Estar mais perto da borda não é melhor nem pior: só indica o lado do eixo. Toque num ponto para abrir o eixo.</p>';
-      out += radarSVG(b.eixos);
-      out += '<div class="legenda">' + b.eixos.map(function (e) { return '<button class="leg" data-acao="aba" data-v="' + e.codigo + '"><b>' + h(e.codigo) + '</b> ' + h(e.curto) + '</button>'; }).join('') + '</div>';
-      out += '</div><div class="card"><h2>Mapa de posições</h2>';
-      b.eixos.forEach(function (e) {
-        out += '<div class="mapa-linha" data-acao="aba" data-v="' + e.codigo + '"><div class="topo" style="margin:0"><h3>' + h(e.codigo) + ' · ' + h(e.nome) + '</h3><span class="chip c-' + e.posicao.chave + '">' + fmt(e.media) + '</span></div>' +
-          barraPos(e.media, e.media === null) +
-          '<div class="polos"><span>' + h(e.polo1) + '</span><span>' + h(e.polo5) + '</span></div></div>';
-      });
-      out += '</div>';
-    });
+    out += faixaCalor(res);
+    out += graficoDivergente(res);
 
     var ne = L.naoEntendidos(D, estado.uso);
     if (ne.length) {
