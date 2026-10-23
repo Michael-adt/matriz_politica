@@ -5,12 +5,1094 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Perfil político (teste)</title>
-<link rel="stylesheet" href="style.css">
+<style>
+:root {
+  --bg: #0f1218; --card: #181d27; --card2: #202736; --txt: #eef1f6; --mut: #9aa4b5; --linha: #2c3445;
+  --p1: #2fb7a6; --p5: #e6a23c; --acento: #7aa2ff; --ok: #3ecf8e; --aviso: #f0b34a; --erro: #ef6a6a;
+  --raio: 14px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f6f9; --card: #ffffff; --card2: #eef1f6; --txt: #161b26; --mut: #5b667a; --linha: #d9dfeb;
+    --p1: #14917f; --p5: #c27b12; --acento: #2f5fd0; --ok: #1a9e63; --aviso: #b87a0c; --erro: #cc3b3b;
+    color-scheme: light;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--txt); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.app { max-width: 760px; margin: 0 auto; padding: 16px 16px 72px; }
+h1 { font-size: 1.55rem; line-height: 1.2; margin: 8px 0 12px; }
+h2 { font-size: 1.15rem; margin: 0 0 10px; }
+h3 { font-size: 1rem; margin: 0 0 6px; }
+p { margin: 0 0 10px; }
+.mut { color: var(--mut); }
+.peq { font-size: .85rem; }
+.card { background: var(--card); border: 1px solid var(--linha); border-radius: var(--raio); padding: 16px; margin-bottom: 14px; }
+.aviso { border-left: 4px solid var(--aviso); }
+.erro { border-left: 4px solid var(--erro); }
+.ok { border-left: 4px solid var(--ok); }
+.btn { appearance: none; border: 1px solid var(--linha); background: var(--card2); color: var(--txt); border-radius: 12px; padding: 12px 16px; font: inherit; font-weight: 600; cursor: pointer; min-height: 48px; }
+.btn:hover { border-color: var(--acento); }
+.btn.prim { background: var(--acento); border-color: var(--acento); color: #fff; }
+.btn.bloco { display: block; width: 100%; text-align: left; margin-bottom: 8px; font-weight: 500; }
+.btn.bloco.sel { border-color: var(--acento); box-shadow: inset 0 0 0 2px var(--acento); font-weight: 700; }
+.linha-btn { display: flex; gap: 10px; flex-wrap: wrap; }
+.topo { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.prog { height: 8px; background: var(--card2); border-radius: 99px; overflow: hidden; margin: 6px 0 16px; }
+.prog > i { display: block; height: 100%; background: var(--acento); transition: width .25s; }
+.pergunta { font-size: 1.2rem; line-height: 1.4; margin: 6px 0 18px; }
+.pular { background: transparent; border: none; color: var(--mut); text-decoration: underline; padding: 10px 0; font: inherit; cursor: pointer; }
+.abas { position: sticky; top: 0; z-index: 5; background: var(--bg); display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin: 0 -16px 8px; padding-left: 16px; padding-right: 16px; scrollbar-width: thin; }
+.aba { flex: 0 0 auto; border: 1px solid var(--linha); background: var(--card); color: var(--txt); border-radius: 99px; padding: 8px 14px; font: inherit; font-size: .9rem; cursor: pointer; white-space: nowrap; min-height: 40px; }
+.aba.sel { background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 700; }
+.kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+@media (min-width: 620px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+.kpi { background: var(--card); border: 1px solid var(--linha); border-radius: var(--raio); padding: 12px; }
+.kpi b { display: block; font-size: 1.6rem; line-height: 1.1; }
+.kpi span { color: var(--mut); font-size: .82rem; }
+.chip { display: inline-block; border-radius: 99px; padding: 3px 10px; font-size: .78rem; font-weight: 700; border: 1px solid var(--linha); background: var(--card2); }
+.chip.c-forte1, .chip.c-tende1 { border-color: var(--p1); color: var(--p1); }
+.chip.c-forte5, .chip.c-tende5 { border-color: var(--p5); color: var(--p5); }
+.chip.c-alta { border-color: var(--ok); color: var(--ok); }
+.chip.c-media { border-color: var(--aviso); color: var(--aviso); }
+.chip.c-baixa { border-color: var(--erro); color: var(--erro); }
+.radar { width: 100%; height: auto; display: block; }
+.radar text { fill: var(--txt); font-size: 11px; cursor: pointer; }
+.radar .cod { font-weight: 700; font-size: 16px; }
+.radar .sub { fill: var(--mut); font-size: 9.5px; }
+.radar .anel { fill: none; stroke: var(--linha); stroke-width: 1; }
+.radar .raio { stroke: var(--linha); stroke-width: 1; }
+.radar .area { fill: var(--acento); fill-opacity: .25; stroke: var(--acento); stroke-width: 2; }
+.radar .pt { fill: var(--acento); stroke: var(--bg); stroke-width: 2; cursor: pointer; }
+.radar .escala { fill: var(--mut); font-size: 11px; cursor: default; }
+.mapa-linha { padding: 10px 0; border-top: 1px solid var(--linha); cursor: pointer; }
+.mapa-linha:first-child { border-top: none; }
+.mapa-linha:hover h3 { color: var(--acento); }
+.barra { position: relative; height: 10px; border-radius: 99px; background: linear-gradient(90deg, var(--p1), var(--card2) 50%, var(--p5)); margin: 10px 0 6px; }
+.barra .marca { position: absolute; top: -5px; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; background: var(--txt); border: 3px solid var(--bg); box-shadow: 0 0 0 2px var(--acento); }
+.barra.vazia { opacity: .35; }
+.polos { display: flex; justify-content: space-between; gap: 12px; font-size: .78rem; color: var(--mut); }
+.polos span { max-width: 48%; }
+.polos span:last-child { text-align: right; }
+.nota-grande { font-size: 2.6rem; font-weight: 800; line-height: 1; white-space: nowrap; flex-shrink: 0; }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.leg { border: 1px solid var(--linha); background: var(--card2); color: var(--txt); border-radius: 99px; padding: 6px 10px; font: inherit; font-size: .8rem; cursor: pointer; }
+.leg b { color: var(--acento); }
+.cab-eixo { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
+.item { border-top: 1px solid var(--linha); padding: 12px 0; }
+.item:first-of-type { border-top: none; }
+.item .tx { margin-bottom: 8px; }
+.item .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .85rem; }
+.mini { height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--p1), var(--card2) 50%, var(--p5)); position: relative; margin: 10px 4px 2px; }
+.mini i { position: absolute; top: -4px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--txt); border: 2px solid var(--bg); }
+details summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.rodape { color: var(--mut); font-size: .8rem; margin-top: 22px; }
+.sr { position: absolute; left: -9999px; }
+ul.sem { padding-left: 18px; margin: 6px 0 10px; }
+@media print { .abas, .btn { display: none; } }
+
+.ajuda-btn { appearance: none; border: 1px dashed var(--acento); background: transparent; color: var(--acento); border-radius: 12px; padding: 10px 14px; font: inherit; font-weight: 600; cursor: pointer; margin: 0 0 12px; min-height: 44px; }
+.ajuda-box { background: var(--card); border: 1px solid var(--linha); border-left: 4px solid var(--acento); border-radius: var(--raio); padding: 12px 14px; margin: 0 0 14px; font-size: .95rem; }
+.dica { color: var(--aviso); font-weight: 600; margin-bottom: 8px; }
+.rodape-perg { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+</style>
 </head>
 <body>
 <main class="app" id="app"><noscript>Este questionário precisa de JavaScript ativado.</noscript></main>
-<script src="itens.js"></script>
-<script src="logica.js"></script>
-<script src="app.js"></script>
+<script>
+// Gerado de bloco_A_itens_v2.xlsx, da aba Eixos e de ajuda_bloco_A.py. Para novos blocos, acrescente objetos em "blocos".
+window.QUESTIONARIO = {
+ "versao": "0.2 (teste, só bloco A)",
+ "escala": [
+  {
+   "v": 1,
+   "t": "Discordo totalmente"
+  },
+  {
+   "v": 2,
+   "t": "Discordo"
+  },
+  {
+   "v": 3,
+   "t": "Nem concordo nem discordo"
+  },
+  {
+   "v": 4,
+   "t": "Concordo"
+  },
+  {
+   "v": 5,
+   "t": "Concordo totalmente"
+  }
+ ],
+ "blocos": [
+  {
+   "codigo": "A",
+   "nome": "Economia e Estado",
+   "eixos": [
+    {
+     "codigo": "A1",
+     "nome": "Gestão econômica",
+     "curto": "Gestão econômica",
+     "polo1": "Estado indutor e regulador forte",
+     "polo5": "Mercado livre, mínima regulação",
+     "itens": [
+      {
+       "id": "A1.1",
+       "texto": "Em geral, a economia cresce mais quando as empresas têm liberdade para decidir preços e investimentos.",
+       "sentido": "D"
+      },
+      {
+       "id": "A1.2",
+       "texto": "O governo deve direcionar quais setores da economia recebem mais incentivo e investimento.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Política industrial: o governo escolher setores da economia para apoiar com crédito, incentivos ou compras públicas.",
+        "exemplos": [
+         "O governo oferecer crédito mais barato a certos setores, como a indústria naval ou a de energia renovável.",
+         "O governo não escolher setores e deixar as empresas e os investidores decidirem onde aplicar o dinheiro."
+        ]
+       }
+      },
+      {
+       "id": "A1.3",
+       "texto": "Regras mais simples e menos fiscalização sobre as empresas trariam mais benefícios do que riscos ao país.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Regras e fiscalização são exigências do governo sobre como as empresas funcionam.",
+        "exemplos": [
+         "Licenças e documentos exigidos para abrir um restaurante, e a visita da vigilância sanitária.",
+         "Regras de segurança em obras e a fiscalização de produtos vendidos ao consumidor."
+        ]
+       }
+      },
+      {
+       "id": "A1.4",
+       "texto": "Sem regulação firme do governo, setores importantes tendem a se concentrar e prejudicar os consumidores.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Concentrar significa que poucas empresas passam a dominar um mercado. Regulação são as regras e os órgãos que fiscalizam um setor.",
+        "exemplos": [
+         "Poucas empresas dominarem um mercado e conseguirem cobrar mais caro dos consumidores.",
+         "Agências como a Anatel (telefonia e internet) e a Anac (aviação) criam regras e fiscalizam esses setores."
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "codigo": "A2",
+     "nome": "Estatais e privatizações",
+     "curto": "Estatais",
+     "polo1": "Manter/ampliar estatais e serviços públicos",
+     "polo5": "Privatizar amplamente",
+     "itens": [
+      {
+       "id": "A2.1",
+       "texto": "Bancos, petroleiras e empresas de energia funcionam melhor quando administrados por empresas privadas.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Privatizar é passar para o setor privado uma empresa que hoje pertence ao governo, por venda ou concessão.",
+        "exemplos": [
+         "A Petrobras e os Correios são exemplos de empresas controladas pelo governo.",
+         "A Vale e a Embraer eram estatais e passaram para o controle privado nos anos 1990."
+        ]
+       }
+      },
+      {
+       "id": "A2.2",
+       "texto": "Alguns setores estratégicos devem continuar sob controle do Estado, mesmo que isso custe mais.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Setores estratégicos são aqueles considerados essenciais para a segurança ou a soberania do país.",
+        "exemplos": [
+         "Petróleo, energia nuclear e defesa costumam ser citados como setores estratégicos.",
+         "Controle do Estado significa que o governo é o dono ou o acionista que decide, como acontece na Petrobras."
+        ]
+       }
+      },
+      {
+       "id": "A2.3",
+       "texto": "Serviços como água e saneamento deveriam ser operados por empresas privadas sob contrato com o governo.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Concessão é quando o governo contrata uma empresa privada para operar um serviço por um prazo, mantendo a responsabilidade sobre ele.",
+        "exemplos": [
+         "Em algumas cidades a água é fornecida por uma empresa estadual; em outras, por uma empresa privada contratada.",
+         "Muitas rodovias com pedágio são operadas por empresas privadas por concessão."
+        ]
+       }
+      },
+      {
+       "id": "A2.4",
+       "texto": "Se uma empresa pública presta um bom serviço, vendê-la é um erro, mesmo que o governo arrecade muito com a venda.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Empresa pública é a que pertence ao governo. O dinheiro da venda entra nos cofres públicos.",
+        "exemplos": [
+         "Imagine uma empresa estatal que dá lucro e atende bem, e que o governo recebe uma oferta alta para vendê-la.",
+         "O valor arrecadado com a venda poderia ser usado, por exemplo, para reduzir a dívida pública ou pagar outros gastos."
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "codigo": "A3",
+     "nome": "Tributação e gasto público",
+     "curto": "Impostos e gasto",
+     "polo1": "Mais impostos e mais serviços",
+     "polo5": "Menos impostos e menos gasto",
+     "itens": [
+      {
+       "id": "A3.1",
+       "texto": "Prefiro pagar menos impostos, mesmo que isso signifique menos serviços públicos.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "A frase compara dois efeitos que costumam andar juntos: quanto você paga de impostos e quanto o governo tem para gastar em serviços.",
+        "exemplos": [
+         "Menos impostos pode significar mais dinheiro no seu salário ou no caixa do seu negócio.",
+         "Menos impostos também pode significar menos dinheiro do governo para saúde, escolas e policiamento."
+        ]
+       }
+      },
+      {
+       "id": "A3.2",
+       "texto": "Quem tem renda mais alta deve pagar proporcionalmente mais impostos do que paga hoje.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Proporcionalmente quer dizer uma fatia maior da renda, não apenas um valor maior em reais.",
+        "exemplos": [
+         "No Imposto de Renda, quem ganha mais paga uma porcentagem maior sobre a renda.",
+         "Impostos embutidos no preço dos produtos, como o de um sabonete ou o de um celular, são os mesmos para todos."
+        ]
+       }
+      },
+      {
+       "id": "A3.3",
+       "texto": "Para melhorar os serviços públicos, o país precisa arrecadar mais, e não apenas gastar melhor.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Arrecadar é receber impostos e outras receitas. Gastar melhor é usar o dinheiro de forma mais eficiente.",
+        "exemplos": [
+         "Arrecadar mais: aumentar alíquotas ou criar novos impostos.",
+         "Gastar melhor: reduzir desperdícios e gastos considerados desnecessários, sem aumentar a arrecadação."
+        ]
+       }
+      },
+      {
+       "id": "A3.4",
+       "texto": "O principal problema das contas públicas é o tamanho do gasto do governo, e não o valor dos impostos.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "As contas públicas comparam o que o governo arrecada com o que ele gasta. Quando gasta mais do que arrecada, há déficit.",
+        "exemplos": [
+         "Se o governo gasta mais do que recebe, a dívida pública cresce.",
+         "Para equilibrar as contas há dois caminhos, que podem ser combinados: gastar menos ou arrecadar mais."
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "codigo": "A4",
+     "nome": "Redistribuição e programas sociais",
+     "curto": "Redistribuição",
+     "polo1": "Programas amplos e universais",
+     "polo5": "Programas mínimos/focalizados; ênfase em oportunidades",
+     "itens": [
+      {
+       "id": "A4.1",
+       "texto": "Programas de transferência de renda devem ser amplos, mesmo que alcancem pessoas que não são as mais pobres.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Transferência de renda é quando o governo repassa dinheiro diretamente às famílias. Amplo quer dizer que atinge mais gente, não só os mais pobres.",
+        "exemplos": [
+         "O Bolsa Família repassa dinheiro a famílias de baixa renda.",
+         "O auxílio emergencial de 2020 chegou a uma parcela bem maior da população."
+        ]
+       }
+      },
+      {
+       "id": "A4.2",
+       "texto": "Programas sociais devem ficar restritos a quem comprovadamente não tem condições de se sustentar.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Restritos quer dizer que só recebe quem comprova necessidade; quem passa do limite de renda fica de fora.",
+        "exemplos": [
+         "Exigir cadastro e comprovação de renda, como no Cadastro Único, para receber um benefício.",
+         "Definir um limite de renda por pessoa da família, acima do qual não há direito ao benefício."
+        ]
+       }
+      },
+      {
+       "id": "A4.3",
+       "texto": "É mais eficaz investir em oportunidades (educação, crédito, emprego) do que transferir dinheiro diretamente às pessoas.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "A frase compara duas formas de ajudar: dar dinheiro diretamente ou criar condições para a pessoa gerar a própria renda.",
+        "exemplos": [
+         "Transferir dinheiro: um valor pago todo mês às famílias.",
+         "Investir em oportunidades: cursos técnicos, microcrédito e programas de emprego."
+        ]
+       }
+      },
+      {
+       "id": "A4.4",
+       "texto": "Garantir uma renda mínima a todos os brasileiros é dever do Estado.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Renda mínima é um valor mensal garantido às pessoas, mesmo sem trabalho formal.",
+        "exemplos": [
+         "Uma renda básica universal seria paga a todos os cidadãos, independentemente da renda.",
+         "Hoje existem programas para parte da população, como o Bolsa Família e o BPC, voltado a idosos e pessoas com deficiência de baixa renda."
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "codigo": "A5",
+     "nome": "Causas da desigualdade",
+     "curto": "Desigualdade",
+     "polo1": "Principalmente estruturais",
+     "polo5": "Principalmente esforço individual",
+     "itens": [
+      {
+       "id": "A5.1",
+       "texto": "No Brasil, quem se esforça o bastante consegue melhorar de vida.",
+       "sentido": "D"
+      },
+      {
+       "id": "A5.2",
+       "texto": "O ponto de partida de uma pessoa (família, local onde nasceu, escola) pesa mais no que ela alcança do que o esforço.",
+       "sentido": "R"
+      },
+      {
+       "id": "A5.3",
+       "texto": "As diferenças de renda entre as pessoas refletem, principalmente, diferenças de dedicação e talento.",
+       "sentido": "D"
+      },
+      {
+       "id": "A5.4",
+       "texto": "Duas pessoas igualmente esforçadas têm chances muito desiguais de sucesso no país.",
+       "sentido": "R"
+      }
+     ]
+    },
+    {
+     "codigo": "A6",
+     "nome": "Trabalho, sindicatos e jornada",
+     "curto": "Trabalho e jornada",
+     "polo1": "Proteção legal, sindicatos fortes e jornada reduzida por lei",
+     "polo5": "Flexibilização das relações de trabalho e da jornada",
+     "itens": [
+      {
+       "id": "A6.1",
+       "texto": "Patrões e empregados devem poder negociar diretamente as condições de trabalho, com menos regras fixas em lei.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Condições de trabalho são itens como salário, horário, férias e benefícios. Hoje parte delas é fixada em lei.",
+        "exemplos": [
+         "Hoje a lei define itens como as férias de 30 dias e o 13º salário.",
+         "Negociar diretamente seria empresa e funcionário combinarem essas condições entre si, mesmo que sejam diferentes do que a lei prevê."
+        ]
+       }
+      },
+      {
+       "id": "A6.2",
+       "texto": "Os sindicatos são importantes para proteger os direitos dos trabalhadores.",
+       "sentido": "R"
+      },
+      {
+       "id": "A6.3",
+       "texto": "A legislação trabalhista atual encarece e dificulta a contratação de funcionários.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Legislação trabalhista é o conjunto de leis sobre contratação, jornada, férias, demissão e encargos, como a CLT.",
+        "exemplos": [
+         "Encargos que a empresa paga além do salário, como o FGTS e a contribuição à Previdência.",
+         "Regras para contratar e demitir previstas na CLT."
+        ]
+       }
+      },
+      {
+       "id": "A6.4",
+       "texto": "Os direitos trabalhistas previstos em lei não devem ser flexibilizados, nem mesmo por acordo entre as partes.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Flexibilizar é permitir que valha um acordo diferente do que está escrito na lei.",
+        "exemplos": [
+         "Em alguns casos, um acordo coletivo já pode reduzir o intervalo de almoço de 1 hora para 30 minutos.",
+         "Em regra, as férias de 30 dias não podem ser reduzidas nem por acordo."
+        ]
+       }
+      },
+      {
+       "id": "A6.5",
+       "texto": "A jornada de trabalho deveria poder ser definida por acordo entre empresa e funcionário, e não por lei.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Jornada de trabalho é o número de horas que a pessoa trabalha por dia e por semana.",
+        "exemplos": [
+         "Hoje a lei fixa um limite de 8 horas por dia e 44 horas por semana, com exceções.",
+         "Escalas como 12 horas de trabalho por 36 de descanso já existem em alguns setores, por acordo."
+        ]
+       }
+      },
+      {
+       "id": "A6.6",
+       "texto": "A jornada de trabalho deveria ser reduzida por lei, mesmo que isso aumente os custos das empresas.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Reduzir a jornada por lei é diminuir o limite de horas que a lei permite trabalhar.",
+        "exemplos": [
+         "Há propostas em debate para reduzir o limite semanal ou acabar com a escala 6x1 (seis dias de trabalho para um de folga).",
+         "Com menos horas por pessoa, uma empresa pode precisar contratar mais gente ou pagar horas extras para manter a produção."
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "codigo": "A7",
+     "nome": "Meio ambiente × desenvolvimento",
+     "curto": "Ambiente",
+     "polo1": "Preservação tem prioridade",
+     "polo5": "Desenvolvimento e produção têm prioridade",
+     "itens": [
+      {
+       "id": "A7.1",
+       "texto": "Quando há conflito, a proteção ambiental deve vir antes da geração de empregos e renda.",
+       "sentido": "R"
+      },
+      {
+       "id": "A7.2",
+       "texto": "O país pode ampliar a produção agrícola e a mineração, mesmo que isso reduza áreas de vegetação nativa.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Vegetação nativa é a mata, a floresta ou o cerrado originais de uma região.",
+        "exemplos": [
+         "Transformar parte de uma área de cerrado em plantação de soja.",
+         "Abrir uma mina em uma área de mata."
+        ]
+       }
+      },
+      {
+       "id": "A7.3",
+       "texto": "As regras ambientais atuais atrapalham o desenvolvimento mais do que protegem a natureza.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Regras ambientais são exigências feitas antes e durante atividades que afetam a natureza.",
+        "exemplos": [
+         "A licença ambiental exigida antes de construir uma estrada ou uma usina.",
+         "A obrigação de manter parte de uma propriedade rural coberta por vegetação preservada, chamada de reserva legal."
+        ]
+       }
+      },
+      {
+       "id": "A7.4",
+       "texto": "Projetos devem ser barrados se houver risco relevante ao meio ambiente, mesmo que gerem muitos empregos.",
+       "sentido": "R"
+      }
+     ]
+    },
+    {
+     "codigo": "A8",
+     "nome": "Saúde pública",
+     "curto": "Saúde",
+     "polo1": "SUS universal, com mais financiamento público",
+     "polo5": "Maior papel do setor privado e dos planos de saúde",
+     "itens": [
+      {
+       "id": "A8.1",
+       "texto": "O Estado deve garantir atendimento de saúde gratuito e completo a todas as pessoas.",
+       "sentido": "R"
+      },
+      {
+       "id": "A8.2",
+       "texto": "Hospitais e planos de saúde privados deveriam assumir uma parte maior do atendimento à população.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Assumir uma parte maior do atendimento pode significar mais pessoas com plano de saúde ou o governo pagando hospitais privados para atender pacientes do SUS.",
+        "exemplos": [
+         "Hoje cerca de um quarto da população tem plano de saúde; os demais contam apenas com o SUS.",
+         "O governo contratar hospitais particulares para realizar cirurgias de pacientes do SUS."
+        ]
+       }
+      },
+      {
+       "id": "A8.3",
+       "texto": "Quem pode pagar deveria contribuir diretamente pelo atendimento que usa no sistema público.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Hoje o atendimento no SUS é gratuito na hora e financiado por impostos. Contribuir diretamente seria pagar algo no momento do uso.",
+        "exemplos": [
+         "Uma taxa, proporcional à renda, cobrada de quem tem condições ao ser atendido.",
+         "Pessoas com plano de saúde pagarem uma parte quando usam o SUS."
+        ]
+       }
+      },
+      {
+       "id": "A8.4",
+       "texto": "O melhor caminho para melhorar a saúde é investir mais no sistema público, e não ampliar o papel do setor privado.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "A frase compara dois caminhos para melhorar a saúde: mais recursos para o SUS ou mais espaço para o setor privado.",
+        "exemplos": [
+         "Investir no sistema público: contratar profissionais, abrir unidades de pronto atendimento e comprar equipamentos para o SUS.",
+         "Ampliar o setor privado: incentivar planos de saúde ou contratar hospitais particulares."
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "codigo": "A9",
+     "nome": "Previdência",
+     "curto": "Previdência",
+     "polo1": "Aposentadoria protegida (regras mais generosas, menor idade mínima)",
+     "polo5": "Reformas para reduzir o gasto previdenciário; maior responsabilidade individual",
+     "itens": [
+      {
+       "id": "A9.1",
+       "texto": "Para o sistema de aposentadorias se manter, é preciso exigir mais tempo de contribuição ou idade mínima maior.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Tempo de contribuição é o período em que a pessoa pagou a Previdência. Idade mínima é a idade exigida para se aposentar.",
+        "exemplos": [
+         "Pela regra permanente criada na reforma de 2019, a aposentadoria exige idade mínima de 62 anos para mulheres e 65 para homens, além de tempo de contribuição.",
+         "Exigir mais seria aumentar essa idade ou esse tempo, o que faz a pessoa trabalhar por mais anos antes de se aposentar."
+        ]
+       }
+      },
+      {
+       "id": "A9.2",
+       "texto": "A aposentadoria deve ser um direito garantido pelo Estado, mesmo que isso custe mais ao governo.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Hoje as aposentadorias do INSS são pagas com as contribuições dos trabalhadores e com recursos do governo.",
+        "exemplos": [
+         "O INSS paga aposentadorias e pensões todos os meses a milhões de pessoas.",
+         "Custar mais ao governo significa que uma parte maior do orçamento seria usada com aposentadorias."
+        ]
+       }
+      },
+      {
+       "id": "A9.3",
+       "texto": "Cada pessoa deveria poupar para a própria aposentadoria em uma conta individual, em vez de depender do sistema público.",
+       "sentido": "D",
+       "ajuda": {
+        "explica": "Conta individual é o modelo em que cada pessoa deposita para si e usa o dinheiro depois, também chamado de capitalização.",
+        "exemplos": [
+         "Previdência privada: a pessoa faz depósitos mensais em uma conta própria e retira o dinheiro na aposentadoria.",
+         "No modelo atual, as contribuições dos trabalhadores de hoje pagam as aposentadorias de quem já se aposentou."
+        ]
+       }
+      },
+      {
+       "id": "A9.4",
+       "texto": "As regras de aposentadoria deveriam ser mais generosas, mesmo que isso aumente o gasto do governo.",
+       "sentido": "R",
+       "ajuda": {
+        "explica": "Mais generosas quer dizer regras que dão o benefício mais cedo ou com valor maior.",
+        "exemplos": [
+         "Permitir a aposentadoria com idade menor do que a de hoje.",
+         "Aumentar o valor das aposentadorias pagas."
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+};
+
+</script>
+<script>
+/* Lógica de pontuação do questionário. Sem dependência de navegador (testável no Node). */
+(function (root) {
+  'use strict';
+
+  var ROTULOS = { 1: 'Discordo totalmente', 2: 'Discordo', 3: 'Nem concordo nem discordo', 4: 'Concordo', 5: 'Concordo totalmente' };
+
+  function recodificar(sentido, v) { return sentido === 'R' ? 6 - v : v; }
+  function valido(v) { return typeof v === 'number' && v >= 1 && v <= 5; }
+
+  // Posição do eixo (1 = polo 1, 5 = polo 5) -> rótulo
+  function rotuloPosicao(m) {
+    if (m === null) return { chave: 'insuficiente', texto: 'Dados insuficientes' };
+    if (m <= 1.6) return { chave: 'forte1', texto: 'Alinhamento forte ao Polo 1' };
+    if (m <= 2.4) return { chave: 'tende1', texto: 'Tendência ao Polo 1' };
+    if (m < 3.6) return { chave: 'meio', texto: 'Posição intermediária ou ambivalente' };
+    if (m < 4.4) return { chave: 'tende5', texto: 'Tendência ao Polo 5' };
+    return { chave: 'forte5', texto: 'Alinhamento forte ao Polo 5' };
+  }
+
+  function resultadoEixo(eixo, respostas) {
+    var itens = eixo.itens.map(function (it) {
+      var v = respostas[it.id];
+      var ok = valido(v);
+      return { id: it.id, texto: it.texto, sentido: it.sentido,
+               resposta: ok ? v : null, nota: ok ? recodificar(it.sentido, v) : null };
+    });
+    var notas = itens.filter(function (i) { return i.nota !== null; }).map(function (i) { return i.nota; });
+    var n = notas.length;
+    var media = n >= 2 ? notas.reduce(function (a, b) { return a + b; }, 0) / n : null;
+    var amplitude = n >= 2 ? Math.max.apply(null, notas) - Math.min.apply(null, notas) : null;
+
+    var contradicoes = [];
+    for (var i = 0; i < itens.length; i++) {
+      for (var j = i + 1; j < itens.length; j++) {
+        var a = itens[i], b = itens[j];
+        if (a.resposta === null || b.resposta === null || a.sentido === b.sentido) continue;
+        if (a.resposta >= 4 && b.resposta >= 4) contradicoes.push({ tipo: 'concorda_ambos', a: a.id, b: b.id });
+        else if (a.resposta <= 2 && b.resposta <= 2) contradicoes.push({ tipo: 'discorda_ambos', a: a.id, b: b.id });
+      }
+    }
+
+    var consistencia;
+    if (amplitude === null) consistencia = { chave: 'insuficiente', texto: 'Dados insuficientes' };
+    else if (amplitude <= 1) consistencia = { chave: 'alta', texto: 'Respostas coerentes' };
+    else if (amplitude <= 2) consistencia = { chave: 'media', texto: 'Coerência moderada' };
+    else consistencia = { chave: 'baixa', texto: 'Respostas divergentes' };
+
+    return {
+      codigo: eixo.codigo, nome: eixo.nome, curto: eixo.curto, polo1: eixo.polo1, polo5: eixo.polo5,
+      itens: itens, validos: n, total: itens.length, media: media, amplitude: amplitude,
+      posicao: rotuloPosicao(media), consistencia: consistencia, contradicoes: contradicoes
+    };
+  }
+
+  // Qualidade geral das respostas (tendência a concordar com tudo, resposta única repetida, muitas puladas)
+  function qualidadeGeral(dados, respostas) {
+    var todos = [];
+    dados.blocos.forEach(function (b) { b.eixos.forEach(function (e) { e.itens.forEach(function (it) { todos.push(it); }); }); });
+    var vals = todos.map(function (it) { return respostas[it.id]; }).filter(valido);
+    var puladas = todos.length - vals.length;
+    var alertas = [];
+    if (vals.length) {
+      var mediaBruta = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+      var cont = {};
+      vals.forEach(function (v) { cont[v] = (cont[v] || 0) + 1; });
+      var maxFreq = Math.max.apply(null, Object.keys(cont).map(function (k) { return cont[k]; })) / vals.length;
+      if (vals.length >= 10 && mediaBruta >= 3.9) alertas.push('Você concordou com a maior parte das afirmações, inclusive com algumas que apontam para lados opostos. Isso pode indicar tendência a concordar com tudo e reduz a precisão do resultado.');
+      if (vals.length >= 10 && mediaBruta <= 2.1) alertas.push('Você discordou da maior parte das afirmações. Se nenhuma representa sua opinião, o resultado tende ao centro.');
+      if (vals.length >= 10 && maxFreq >= 0.85) alertas.push('Quase todas as respostas foram iguais. Isso sugere resposta automática e o resultado perde confiabilidade.');
+    }
+    if (todos.length && puladas / todos.length > 0.25) alertas.push('Mais de um quarto das afirmações ficou sem resposta; vários eixos podem ter dados insuficientes.');
+    return { total: todos.length, validas: vals.length, puladas: puladas, alertas: alertas };
+  }
+
+  function resultadoCompleto(dados, respostas) {
+    var blocos = dados.blocos.map(function (b) {
+      return { codigo: b.codigo, nome: b.nome, eixos: b.eixos.map(function (e) { return resultadoEixo(e, respostas); }) };
+    });
+    return { blocos: blocos, qualidade: qualidadeGeral(dados, respostas) };
+  }
+
+  // Ordem das perguntas: embaralhada com semente, evitando dois itens seguidos do mesmo eixo
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function ordemItens(dados, semente) {
+    var todos = [];
+    dados.blocos.forEach(function (b) { b.eixos.forEach(function (e) { e.itens.forEach(function (it) { todos.push({ id: it.id, eixo: e.codigo }); }); }); });
+    var rnd = mulberry32(semente);
+    for (var i = todos.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var t = todos[i]; todos[i] = todos[j]; todos[j] = t;
+    }
+    for (var k = 1; k < todos.length; k++) {
+      if (todos[k].eixo === todos[k - 1].eixo) {
+        for (var m = k + 1; m < todos.length; m++) {
+          if (todos[m].eixo !== todos[k - 1].eixo && (k + 1 >= todos.length || todos[m].eixo !== (todos[k + 1] || {}).eixo)) {
+            var tmp = todos[k]; todos[k] = todos[m]; todos[m] = tmp; break;
+          }
+        }
+      }
+    }
+    return todos.map(function (x) { return x.id; });
+  }
+
+  // Itens que a pessoa marcou como "não entendi"
+  function naoEntendidos(dados, uso) {
+    var ids = [];
+    dados.blocos.forEach(function (b) { b.eixos.forEach(function (e) { e.itens.forEach(function (it) {
+      if (uso && uso[it.id] && uso[it.id].pulo === 'nao_entendi') ids.push(it.id);
+    }); }); });
+    return ids;
+  }
+
+  function paraCSV(dados, respostas, meta, uso) {
+    uso = uso || {};
+    var linhas = ['bloco;eixo;item;sentido;resposta;nota_no_eixo;motivo_sem_resposta;abriu_exemplo;exemplo_aberto_apos_nao_entendi;tempo_s'];
+    dados.blocos.forEach(function (b) { b.eixos.forEach(function (e) { e.itens.forEach(function (it) {
+      var v = respostas[it.id], u = uso[it.id] || {};
+      linhas.push([b.codigo, e.codigo, it.id, it.sentido, valido(v) ? v : '', valido(v) ? recodificar(it.sentido, v) : '',
+        valido(v) ? '' : (u.pulo || ''), u.abriu ? 1 : 0, u.via_duvida ? 1 : 0, u.ms ? Math.round(u.ms / 1000) : ''].join(';'));
+    }); }); });
+    linhas.push('');
+    linhas.push('versao;' + dados.versao);
+    if (meta) Object.keys(meta).forEach(function (k) { linhas.push(k + ';' + meta[k]); });
+    return linhas.join('\n');
+  }
+
+  var api = { ROTULOS: ROTULOS, recodificar: recodificar, valido: valido, rotuloPosicao: rotuloPosicao,
+              resultadoEixo: resultadoEixo, resultadoCompleto: resultadoCompleto, qualidadeGeral: qualidadeGeral,
+              ordemItens: ordemItens, paraCSV: paraCSV, naoEntendidos: naoEntendidos };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Logica = api;
+})(typeof window !== 'undefined' ? window : this);
+
+</script>
+<script>
+/* Interface do questionário. Depende de itens.js (window.QUESTIONARIO) e logica.js (window.Logica). */
+(function () {
+  'use strict';
+  var D = window.QUESTIONARIO, L = window.Logica;
+  var CHAVE = 'matriz_politica_v1';
+  var app = document.getElementById('app');
+
+  var estado = { tela: 'intro', semente: 0, ordem: [], respostas: {}, idx: 0, inicio: null, fim: null, uso: {} };
+  var abaAtual = 'geral';
+  var tInicio = null;
+
+  function uso(id) { if (!estado.uso) estado.uso = {}; if (!estado.uso[id]) estado.uso[id] = {}; return estado.uso[id]; }
+  function marcarTempo() {
+    var id = estado.ordem[estado.idx];
+    if (tInicio && id) { var ms = Math.min(Date.now() - tInicio, 120000); uso(id).ms = (uso(id).ms || 0) + ms; }
+    tInicio = null;
+  }
+
+  var mapaItens = {};
+  D.blocos.forEach(function (b) { b.eixos.forEach(function (e) { e.itens.forEach(function (it) { mapaItens[it.id] = { it: it, eixo: e, bloco: b }; }); }); });
+  var totalItens = Object.keys(mapaItens).length;
+  var totalEixos = D.blocos.reduce(function (a, b) { return a + b.eixos.length; }, 0);
+
+  function h(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function fmt(x) { return x === null ? '–' : x.toFixed(1).replace('.', ','); }
+  function pct(m) { return m === null ? 50 : Math.max(0, Math.min(100, (m - 1) / 4 * 100)); }
+
+  function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) { /* sem armazenamento */ } }
+  function carregar() {
+    try {
+      var s = localStorage.getItem(CHAVE);
+      if (!s) return null;
+      var o = JSON.parse(s);
+      if (!o || !Array.isArray(o.ordem) || o.ordem.length !== totalItens) return null;
+      if (!o.uso) o.uso = {};
+      return o;
+    } catch (e) { return null; }
+  }
+  function limpar() { try { localStorage.removeItem(CHAVE); } catch (e) { /* ignora */ } }
+
+  /* ---------- Telas ---------- */
+  function telaIntro() {
+    var salvo = carregar();
+    var respondidas = salvo ? Object.keys(salvo.respostas).length : 0;
+    var continuar = '';
+    if (salvo && salvo.tela === 'resultado') {
+      continuar = '<div class="card ok"><h3>Você já concluiu este questionário neste aparelho</h3><div class="linha-btn"><button class="btn prim" data-acao="ver-resultado">Ver meu resultado</button><button class="btn" data-acao="recomecar">Refazer do zero</button></div></div>';
+    } else if (salvo && respondidas > 0) {
+      continuar = '<div class="card ok"><h3>Questionário em andamento</h3><p class="mut">' + respondidas + ' de ' + totalItens + ' respondidas.</p><div class="linha-btn"><button class="btn prim" data-acao="continuar">Continuar de onde parei</button><button class="btn" data-acao="recomecar">Recomeçar</button></div></div>';
+    }
+    app.innerHTML =
+      '<h1>Seu perfil político</h1>' +
+      '<p class="mut">Versão de teste ' + h(D.versao) + '</p>' +
+      continuar +
+      '<div class="card"><h2>Como funciona</h2>' +
+      '<p>Você vai ler <b>' + totalItens + ' afirmações</b> sobre economia e papel do Estado e dizer o quanto concorda com cada uma. Leva cerca de 6 a 8 minutos.</p>' +
+      '<p>Não há resposta certa ou errada. Responda pelo que você pensa, e não pelo que seria "esperado".</p><p>Se algum termo não ficar claro, toque em <b>Ver explicação e exemplos</b>. Se mesmo assim não entender, use <b>Não entendi</b>: isso ajuda a melhorar o questionário.</p>' +
+      '<p>No final você vê um painel com a sua posição em cada tema, um gráfico geral e o detalhe de cada eixo.</p></div>' +
+      '<div class="card aviso"><h3>Sobre esta versão de teste</h3>' +
+      '<p class="peq">Este protótipo cobre só o bloco A (Economia e Estado). As perguntas ainda não foram validadas com dados reais, então o resultado é uma <b>indicação de posição</b>, não um diagnóstico. Ainda não há classificação em perfis.</p></div>' +
+      '<div class="card"><h3>Privacidade</h3><p class="peq">Suas respostas ficam <b>somente neste navegador</b>. Nada é enviado a nenhum servidor. Para compartilhar o resultado com quem aplica o teste, use o botão de baixar as respostas no final.</p></div>' +
+      '<button class="btn prim" style="width:100%" data-acao="iniciar">Começar</button>';
+  }
+
+  function telaPergunta() {
+    var id = estado.ordem[estado.idx];
+    var info = mapaItens[id];
+    var atual = estado.respostas[id];
+    var prog = Math.round(estado.idx / estado.ordem.length * 100);
+    var u = uso(id);
+    tInicio = Date.now();
+    var ajuda = '';
+    if (info.it.ajuda) {
+      ajuda = '<button class="ajuda-btn" data-acao="ajuda">' + (u.mostrar ? 'Ocultar explicação' : 'Ver explicação e exemplos') + '</button>';
+      if (u.mostrar) {
+        ajuda += '<div class="ajuda-box">' + (u.via_duvida && atual === undefined && !u.pulo ? '<p class="dica">Veja a explicação abaixo. Se ainda não entender, toque em “Continuo sem entender”.</p>' : '') +
+          '<p><b>O que o termo significa:</b> ' + h(info.it.ajuda.explica) + '</p><p style="margin-bottom:4px"><b>Exemplos:</b></p><ul class="sem"><li>' + h(info.it.ajuda.exemplos[0]) + '</li><li>' + h(info.it.ajuda.exemplos[1]) + '</li></ul>' +
+          '<p class="peq mut" style="margin:0">Os exemplos só ilustram o termo. Não indicam qual resposta seria a esperada.</p></div>';
+      }
+    }
+    var rotuloNE = (u.via_duvida && u.mostrar && atual === undefined) ? 'Continuo sem entender' : 'Não entendi a frase';
+    var botoes = D.escala.map(function (o) {
+      return '<button class="btn bloco' + (atual === o.v ? ' sel' : '') + '" data-acao="responder" data-v="' + o.v + '">' + h(o.t) + '</button>';
+    }).join('');
+    app.innerHTML =
+      '<div class="topo"><span class="mut peq">Pergunta ' + (estado.idx + 1) + ' de ' + estado.ordem.length + '</span>' +
+      '<button class="pular" data-acao="sair">Salvar e sair</button></div>' +
+      '<div class="prog"><i style="width:' + prog + '%"></i></div>' +
+      '<p class="mut peq">Bloco ' + h(info.bloco.codigo) + ' · ' + h(info.bloco.nome) + '</p>' +
+      '<p class="pergunta">' + h(info.it.texto) + '</p>' +
+      ajuda +
+      botoes +
+      '<div class="rodape-perg"><button class="pular" data-acao="voltar"' + (estado.idx === 0 ? ' disabled style="visibility:hidden"' : '') + '>← Voltar</button>' +
+      '<button class="pular" data-acao="nao-entendi">' + rotuloNE + '</button>' +
+      '<button class="pular" data-acao="pular">Prefiro não responder</button></div>';
+  }
+
+  /* ---------- Resultado ---------- */
+  function radarSVG(eixos) {
+    var n = eixos.length, cx = 200, cy = 190, R = 138;
+    if (n < 3) return '';
+    var ang = function (i) { return -Math.PI / 2 + i * 2 * Math.PI / n; };
+    var s = '<svg class="radar" viewBox="0 0 400 380" role="img" aria-label="Gráfico de radar com a posição em cada eixo">';
+    for (var r = 1; r <= 5; r++) {
+      var pts = [];
+      for (var i = 0; i < n; i++) pts.push((cx + (r - 1) / 4 * R * Math.cos(ang(i))).toFixed(1) + ',' + (cy + (r - 1) / 4 * R * Math.sin(ang(i))).toFixed(1));
+      if (r === 1) continue;
+      s += '<polygon class="anel" points="' + pts.join(' ') + '"/>';
+    }
+    for (var k = 0; k < n; k++) s += '<line class="raio" x1="' + cx + '" y1="' + cy + '" x2="' + (cx + R * Math.cos(ang(k))).toFixed(1) + '" y2="' + (cy + R * Math.sin(ang(k))).toFixed(1) + '"/>';
+    s += '<text class="escala" x="' + (cx + 4) + '" y="' + (cy - R / 2 - 1) + '">3</text><text class="escala" x="' + (cx + 4) + '" y="' + (cy - R - 2) + '">5</text><text class="escala" x="' + (cx + 4) + '" y="' + (cy - 3) + '">1</text>';
+    var poly = [], pontos = '';
+    eixos.forEach(function (e, i) {
+      if (e.media === null) return;
+      var rr = (e.media - 1) / 4 * R;
+      var x = cx + rr * Math.cos(ang(i)), y = cy + rr * Math.sin(ang(i));
+      poly.push(x.toFixed(1) + ',' + y.toFixed(1));
+      pontos += '<circle class="pt" data-acao="aba" data-v="' + e.codigo + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6"><title>' + h(e.codigo + ' ' + e.nome + ': ' + fmt(e.media)) + '</title></circle>';
+    });
+    if (poly.length >= 3) s += '<polygon class="area" points="' + poly.join(' ') + '"/>';
+    else if (poly.length === 2) s += '<polyline class="area" points="' + poly.join(' ') + '"/>';
+    s += pontos;
+    eixos.forEach(function (e, i) {
+      var c = Math.cos(ang(i)), sn = Math.sin(ang(i));
+      var lx = cx + (R + 16) * c, ly = cy + (R + 16) * sn + 5;
+      var anc = c > 0.3 ? 'start' : (c < -0.3 ? 'end' : 'middle');
+      s += '<g data-acao="aba" data-v="' + e.codigo + '"><text class="cod" x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anc + '">' + h(e.codigo) + '</text></g>';
+    });
+    return s + '</svg>';
+  }
+
+  function barraPos(m, vazia) {
+    return '<div class="barra' + (vazia ? ' vazia' : '') + '"><span class="marca" style="left:' + pct(m) + '%"></span></div>';
+  }
+
+  function abaGeral(res) {
+    var medidos = 0, divergentes = [];
+    res.blocos.forEach(function (b) { b.eixos.forEach(function (e) {
+      if (e.media !== null) medidos++;
+      if (e.consistencia.chave === 'baixa') divergentes.push(e);
+    }); });
+    var dur = estado.inicio && estado.fim ? Math.max(1, Math.round((estado.fim - estado.inicio) / 60000)) : null;
+    var out = '';
+    out += '<div class="card aviso"><p class="peq" style="margin:0"><b>Versão de teste.</b> Mostra só o bloco A (Economia e Estado). As perguntas e as faixas de interpretação ainda não foram validadas com dados reais. Leia como indicação de posição, não como diagnóstico.</p></div>';
+    out += '<div class="kpis">' +
+      '<div class="kpi"><b>' + res.qualidade.validas + '/' + res.qualidade.total + '</b><span>afirmações respondidas</span></div>' +
+      '<div class="kpi"><b>' + medidos + '/' + totalEixos + '</b><span>eixos medidos</span></div>' +
+      '<div class="kpi"><b>' + divergentes.length + '</b><span>eixos com respostas divergentes</span></div>' +
+      '<div class="kpi"><b>' + (dur === null ? '–' : dur + ' min') + '</b><span>tempo de resposta</span></div></div>';
+    res.qualidade.alertas.forEach(function (a) { out += '<div class="card erro"><p class="peq" style="margin:0">' + h(a) + '</p></div>'; });
+
+    res.blocos.forEach(function (b) {
+      out += '<div class="card"><h2>Bloco ' + h(b.codigo) + ' · ' + h(b.nome) + '</h2>';
+      out += '<p class="mut peq">Centro do gráfico = Polo 1 (nota 1); borda = Polo 5 (nota 5). Estar mais perto da borda não é melhor nem pior: só indica o lado do eixo. Toque num ponto para abrir o eixo.</p>';
+      out += radarSVG(b.eixos);
+      out += '<div class="legenda">' + b.eixos.map(function (e) { return '<button class="leg" data-acao="aba" data-v="' + e.codigo + '"><b>' + h(e.codigo) + '</b> ' + h(e.curto) + '</button>'; }).join('') + '</div>';
+      out += '</div><div class="card"><h2>Mapa de posições</h2>';
+      b.eixos.forEach(function (e) {
+        out += '<div class="mapa-linha" data-acao="aba" data-v="' + e.codigo + '"><div class="topo" style="margin:0"><h3>' + h(e.codigo) + ' · ' + h(e.nome) + '</h3><span class="chip c-' + e.posicao.chave + '">' + fmt(e.media) + '</span></div>' +
+          barraPos(e.media, e.media === null) +
+          '<div class="polos"><span>' + h(e.polo1) + '</span><span>' + h(e.polo5) + '</span></div></div>';
+      });
+      out += '</div>';
+    });
+
+    var ne = L.naoEntendidos(D, estado.uso);
+    if (ne.length) {
+      out += '<div class="card"><h3>Afirmações que você marcou como “não entendi”</h3><p class="peq">' + ne.map(function (id) { return '<b>' + h(id) + '</b>'; }).join(', ') + '. Os eixos correspondentes têm menos respostas e podem ficar imprecisos. Essa marcação também mostra ao time quais frases precisam ser reescritas.</p></div>';
+    }
+    if (divergentes.length) {
+      out += '<div class="card aviso"><h3>Eixos para olhar com atenção</h3><p class="peq">Nestes eixos suas respostas apontaram para lados opostos, então a nota média esconde nuances:</p><ul class="sem">';
+      divergentes.forEach(function (e) { out += '<li><a href="#" data-acao="aba" data-v="' + e.codigo + '" style="color:var(--acento)">' + h(e.codigo + ' · ' + e.nome) + '</a></li>'; });
+      out += '</ul></div>';
+    }
+    out += '<div class="card"><h3>Seus dados</h3><div class="linha-btn"><button class="btn" data-acao="csv">Baixar respostas (CSV)</button><button class="btn" data-acao="recomecar">Refazer o questionário</button></div>' +
+      '<p class="peq mut" style="margin-top:10px">O arquivo CSV contém só as suas respostas e notas, sem nome ou identificação.</p></div>';
+    return out;
+  }
+
+  function textoInterpretacao(e) {
+    if (e.media === null) return 'Não há respostas suficientes neste eixo (o mínimo é 2 afirmações respondidas).';
+    var base = 'Em "' + e.nome + '", sua nota foi ' + fmt(e.media) + ' de 5. ';
+    switch (e.posicao.chave) {
+      case 'forte1': return base + 'Suas respostas se alinham de forma clara ao Polo 1: ' + e.polo1 + '.';
+      case 'tende1': return base + 'Suas respostas tendem ao Polo 1 (' + e.polo1 + '), sem chegar ao extremo.';
+      case 'meio': return base + 'Suas respostas ficam perto do meio da escala, entre "' + e.polo1 + '" e "' + e.polo5 + '". Pode ser uma posição moderada ou uma ambivalência; os itens abaixo mostram em quais afirmações você concordou ou discordou.';
+      case 'tende5': return base + 'Suas respostas tendem ao Polo 5 (' + e.polo5 + '), sem chegar ao extremo.';
+      default: return base + 'Suas respostas se alinham de forma clara ao Polo 5: ' + e.polo5 + '.';
+    }
+  }
+
+  function abaEixo(e) {
+    var out = '';
+    out += '<div class="card"><div class="cab-eixo"><div class="nota-grande">' + fmt(e.media) + '<span class="mut" style="font-size:1rem"> /5</span></div>' +
+      '<div><p class="mut peq" style="margin:0">' + h(e.codigo) + '</p><h2 style="margin:0 0 6px">' + h(e.nome) + '</h2>' +
+      '<span class="chip c-' + e.posicao.chave + '">' + h(e.posicao.texto) + '</span> <span class="chip c-' + e.consistencia.chave + '">' + h(e.consistencia.texto) + '</span></div></div>' +
+      barraPos(e.media, e.media === null) +
+      '<div class="polos"><span><b>Polo 1</b><br>' + h(e.polo1) + '</span><span><b>Polo 5</b><br>' + h(e.polo5) + '</span></div></div>';
+
+    var n1 = 0, nm = 0, n5 = 0;
+    e.itens.forEach(function (i) { if (i.nota === null) return; if (i.nota <= 2) n1++; else if (i.nota >= 4) n5++; else nm++; });
+    out += '<div class="card"><h3>O que suas respostas dizem</h3><p>' + h(textoInterpretacao(e)) + '</p>' +
+      '<p class="peq mut">Das ' + e.validos + ' afirmações respondidas: ' + n1 + ' apontam para o Polo 1, ' + nm + ' ficam no meio e ' + n5 + ' apontam para o Polo 5.</p></div>';
+
+    var conc = e.contradicoes.filter(function (c) { return c.tipo === 'concorda_ambos'; });
+    var disc = e.contradicoes.filter(function (c) { return c.tipo === 'discorda_ambos'; });
+    if (conc.length || (e.amplitude !== null && e.amplitude >= 3)) {
+      out += '<div class="card aviso"><h3>Respostas que puxam em sentidos opostos</h3>';
+      if (conc.length) {
+        out += '<p class="peq">Você concordou com afirmações que apontam para lados opostos do eixo:</p><ul class="sem peq">';
+        conc.slice(0, 3).forEach(function (c) { out += '<li><b>' + h(c.a) + '</b> “' + h(mapaItens[c.a].it.texto) + '” e <b>' + h(c.b) + '</b> “' + h(mapaItens[c.b].it.texto) + '”</li>'; });
+        if (conc.length > 3) out += '<li class="mut">e mais ' + (conc.length - 3) + ' par(es) de afirmações.</li>';
+        out += '</ul><p class="peq mut">Isso pode ser nuance real (por exemplo, apoiar a regra geral mas não em certos casos) ou dificuldade de interpretar alguma frase.</p>';
+      } else {
+        out += '<p class="peq">A diferença entre sua nota mais alta e a mais baixa neste eixo é de ' + e.amplitude + ' pontos, o que indica posições diferentes dentro do mesmo tema. Veja os itens abaixo.</p>';
+      }
+      out += '</div>';
+    }
+    if (disc.length) {
+      out += '<div class="card"><h3>Você rejeitou os dois lados em alguns itens</h3><p class="peq">Em ' + disc.length + ' par(es) de afirmações opostas você discordou das duas. Isso é comum em quem não se identifica com nenhum dos dois extremos do eixo.</p></div>';
+    }
+
+    out += '<div class="card"><h3>Suas respostas, item a item</h3>';
+    e.itens.forEach(function (i) {
+      var dir = i.sentido === 'D' ? 'Polo 5' : 'Polo 1';
+      out += '<div class="item"><div class="tx">' + h(i.texto) + '</div><div class="meta">';
+      if (i.resposta === null) {
+        var mot = (estado.uso && estado.uso[i.id] && estado.uso[i.id].pulo) || '';
+        out += '<span class="chip">' + (mot === 'nao_entendi' ? 'Você marcou: não entendi a frase' : (mot === 'prefiro_nao' ? 'Você preferiu não responder' : 'Sem resposta')) + '</span>';
+      } else {
+        out += '<span class="chip">Você: ' + h(L.ROTULOS[i.resposta]) + '</span>' +
+          '<span class="chip">Concordar aponta para o ' + dir + '</span>' +
+          '<span class="chip c-' + (i.nota <= 2 ? 'tende1' : (i.nota >= 4 ? 'tende5' : 'media')) + '">Nota no eixo: ' + i.nota + '</span>';
+      }
+      out += '</div>' + (i.nota === null ? '' : '<div class="mini"><i style="left:' + pct(i.nota) + '%"></i></div>') + '</div>';
+    });
+    out += '</div>';
+
+    out += '<div class="card"><details><summary>Como esta nota foi calculada</summary>' +
+      '<p class="peq">A nota do eixo é a média das notas das afirmações respondidas, de 1 (Polo 1) a 5 (Polo 5). Nas afirmações que apontam para o Polo 1, a nota é invertida (6 menos a resposta) para que todas fiquem na mesma direção. A coerência compara a maior e a menor nota do eixo: diferença de até 1 ponto indica respostas coerentes; 2 pontos, coerência moderada; 3 ou mais, respostas divergentes.</p>' +
+      '<p class="peq mut">Faixas de interpretação (hipóteses a calibrar): até 1,6 forte ao Polo 1; até 2,4 tendência ao Polo 1; entre 2,4 e 3,6 intermediário; até 4,4 tendência ao Polo 5; acima disso, forte ao Polo 5.</p></details></div>';
+    return out;
+  }
+
+  function telaResultado() {
+    var res = L.resultadoCompleto(D, estado.respostas);
+    var abas = '<button class="aba' + (abaAtual === 'geral' ? ' sel' : '') + '" data-acao="aba" data-v="geral">Visão geral</button>';
+    var porCodigo = {};
+    res.blocos.forEach(function (b) { b.eixos.forEach(function (e) {
+      porCodigo[e.codigo] = e;
+      abas += '<button class="aba' + (abaAtual === e.codigo ? ' sel' : '') + '" data-acao="aba" data-v="' + e.codigo + '">' + h(e.codigo) + ' · ' + h(e.curto) + '</button>';
+    }); });
+    var conteudo = abaAtual === 'geral' || !porCodigo[abaAtual] ? abaGeral(res) : abaEixo(porCodigo[abaAtual]);
+    app.innerHTML = '<h1>Seu resultado</h1><div class="abas" role="tablist">' + abas + '</div>' + conteudo +
+      '<p class="rodape">Versão ' + h(D.versao) + '. Resultado gerado no seu navegador; nenhuma resposta foi enviada a servidor.</p>';
+    var sel = app.querySelector('.aba.sel');
+    if (sel && sel.scrollIntoView) { try { sel.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) { /* ignora */ } }
+  }
+
+  function render() {
+    if (estado.tela === 'pergunta') telaPergunta();
+    else if (estado.tela === 'resultado') telaResultado();
+    else telaIntro();
+  }
+
+  /* ---------- Ações ---------- */
+  function novoEstado() {
+    var semente = Math.floor(Math.random() * 2147483647) + 1;
+    estado = { tela: 'pergunta', semente: semente, ordem: L.ordemItens(D, semente), respostas: {}, idx: 0, inicio: Date.now(), fim: null, uso: {} };
+    abaAtual = 'geral';
+    salvar();
+  }
+  function avancar() {
+    marcarTempo();
+    if (estado.idx >= estado.ordem.length - 1) {
+      estado.tela = 'resultado'; estado.fim = Date.now(); abaAtual = 'geral';
+    } else { estado.idx++; }
+    salvar(); render(); window.scrollTo(0, 0);
+  }
+  function baixarCSV() {
+    var meta = { inicio: estado.inicio ? new Date(estado.inicio).toISOString() : '', fim: estado.fim ? new Date(estado.fim).toISOString() : '',
+                 duracao_segundos: estado.inicio && estado.fim ? Math.round((estado.fim - estado.inicio) / 1000) : '' };
+    var blob = new Blob(['﻿' + L.paraCSV(D, estado.respostas, meta, estado.uso)], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'respostas_matriz_politica.csv';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest('[data-acao]');
+    if (!t) return;
+    var acao = t.getAttribute('data-acao');
+    if (t.tagName === 'A') ev.preventDefault();
+    if (acao === 'iniciar' || acao === 'recomecar') {
+      if (acao === 'recomecar' && estado.tela === 'resultado' && !window.confirm('Apagar as respostas e refazer o questionário?')) return;
+      novoEstado(); render(); window.scrollTo(0, 0);
+    } else if (acao === 'continuar') {
+      var s = carregar(); if (s) { estado = s; estado.tela = 'pergunta'; var i = 0; while (i < estado.ordem.length && estado.respostas[estado.ordem[i]] !== undefined) i++; estado.idx = Math.min(i, estado.ordem.length - 1); }
+      render(); window.scrollTo(0, 0);
+    } else if (acao === 'ver-resultado') {
+      var r = carregar(); if (r) { estado = r; abaAtual = 'geral'; render(); window.scrollTo(0, 0); }
+    } else if (acao === 'ajuda') {
+      var ua = uso(estado.ordem[estado.idx]); ua.mostrar = ua.mostrar ? 0 : 1; if (ua.mostrar) ua.abriu = 1;
+      salvar(); telaPergunta();
+    } else if (acao === 'nao-entendi') {
+      var idn = estado.ordem[estado.idx], un = uso(idn), temAjuda = !!mapaItens[idn].it.ajuda;
+      if (temAjuda && !un.mostrar && !un.via_duvida) {
+        un.mostrar = 1; un.abriu = 1; un.via_duvida = 1; salvar(); telaPergunta();
+      } else {
+        un.pulo = 'nao_entendi'; estado.respostas[idn] = null; avancar();
+      }
+    } else if (acao === 'responder') {
+      var idr = estado.ordem[estado.idx]; delete uso(idr).pulo;
+      estado.respostas[idr] = parseInt(t.getAttribute('data-v'), 10);
+      marcarTempo(); salvar();
+      Array.prototype.forEach.call(app.querySelectorAll('.btn.bloco'), function (b) { b.classList.toggle('sel', b === t); });
+      setTimeout(avancar, 180);
+    } else if (acao === 'pular') {
+      uso(estado.ordem[estado.idx]).pulo = 'prefiro_nao'; estado.respostas[estado.ordem[estado.idx]] = null; avancar();
+    } else if (acao === 'voltar') {
+      if (estado.idx > 0) { marcarTempo(); estado.idx--; salvar(); render(); window.scrollTo(0, 0); }
+    } else if (acao === 'sair') {
+      marcarTempo(); salvar(); estado = { tela: 'intro', semente: 0, ordem: [], respostas: {}, idx: 0, inicio: null, fim: null, uso: {} }; render(); window.scrollTo(0, 0);
+    } else if (acao === 'aba') {
+      abaAtual = t.getAttribute('data-v'); telaResultado(); window.scrollTo(0, 0);
+    } else if (acao === 'csv') {
+      baixarCSV();
+    }
+  });
+
+  var salvoInicial = carregar();
+  estado.tela = 'intro';
+  if (salvoInicial) { /* a tela inicial oferece continuar ou ver resultado */ }
+  render();
+  window.__app = { estado: function () { return estado; } };
+})();
+
+</script>
 </body>
 </html>
